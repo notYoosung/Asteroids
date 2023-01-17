@@ -49,6 +49,9 @@ class Laser(pygame.sprite.Sprite):
         self.image = pygame.image.load('./graphics/laser.png').convert_alpha()
 
         self.rect = self.image.get_rect(midbottom=pos)
+    def update(self):
+        self.rect.y -= 1
+        
 
 
 # basic setup
@@ -80,12 +83,14 @@ while True:
 
     # delta time
     dt = clock.tick() / 1000
-
+    print(clock.get_fps())
+    
     # background
     display_surface.blit(background_surf, (0, 0))
 
     # update
     spaceship_group.update()
+    laser_group.update()
 
     # graphics
     spaceship_group.draw(display_surface)
