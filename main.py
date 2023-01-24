@@ -2,6 +2,8 @@ import pygame
 import sys
 from random import randint, uniform
 
+pygame.mixer.init()
+pygame.mixer.music.load('./sounds/laser.ogg')
 
 class Ship(pygame.sprite.Sprite):
     def __init__(self, groups):
@@ -15,15 +17,21 @@ class Ship(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(
             center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
 
+        # 4. Add a mask
+        self.mask = pygame.mask.from_surface(self.image)
+
         # timer
         self.can_shoot = True
         self.shoot_time = None
+
+
+        self.laser_sound = pygame.mixer.Sound('./sounds/laser.ogg')
 
     def input_position(self):
         pos = pygame.mouse.get_pos()
         self.rect.center = pos
 
-    def laser_timer(self, duration=0):
+    def laser_timer(self, duration=500):
         if self.can_shoot:
             return self.can_shoot
 
@@ -37,11 +45,21 @@ class Ship(pygame.sprite.Sprite):
             self.shoot_time = pygame.time.get_ticks()
 
             Laser(self.rect.midtop, laser_group)
+            
+            self.laser_sound.play()
+
+
+    def meteor_collision(self):
+        if pygame.sprite.spritecollide(self, meteor_group, False, pygame.sprite.collide_mask):
+            pygame.quit()
+            sys.exit()
 
     def update(self):
         self.laser_timer()
         self.input_position()
         self.laser_shoot()
+
+        self.meteor_collision()
 
 
 class Laser(pygame.sprite.Sprite):
@@ -49,15 +67,23 @@ class Laser(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = pygame.image.load('./graphics/laser.png').convert_alpha()
         self.rect = self.image.get_rect(midbottom=pos)
+        self.mask = pygame.mask.from_surface(self.image)
 
         # float based position
         self.pos = pygame.math.Vector2(self.rect.topleft)
         self.direction = pygame.math.Vector2(0, -1)
         self.speed = 600
 
+    def meteor_collision(self):
+        if pygame.sprite.spritecollide(self, meteor_group, True, pygame.sprite.collide_mask):
+            self.kill()
+
     def update(self):
         self.pos += self.direction * self.speed * dt
         self.rect.topleft = (round(self.pos.x), round(self.pos.y))
+        self.meteor_collision()
+        if self.rect.bottom < 0:
+            self.kill()
 
 
 class Meteor(pygame.sprite.Sprite):
@@ -66,6 +92,7 @@ class Meteor(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = pygame.image.load('./graphics/meteor.png').convert_alpha()
         self.rect = self.image.get_rect(center=pos)
+        self.mask = pygame.mask.from_surface(self.image)
 
         # float based positioning
         self.pos = pygame.math.Vector2(self.rect.topleft)
@@ -132,7 +159,7 @@ while True:
 
     # delta time
     dt = clock.tick() / 1000
-    print(clock.get_fps())
+    # print(clock.get_fps())
 
     # background
     display_surface.blit(background_surf, (0, 0))

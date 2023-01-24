@@ -2,5 +2,12 @@
     "cSpell.words": [
         "pygame"
     ],
-    "python.analysis.typeCheckingMode": "off"
+    "python.analysis.typeCheckingMode": "off",
+    "files.autoSave": "afterDelay",
+    "jshint.lintHTML": true,
+    "jshint.options": {
+        "asi": false
+    },
+    "json.format.keepLines": false,
+    "jshint.reportWarningsAsErrors": false
 }
